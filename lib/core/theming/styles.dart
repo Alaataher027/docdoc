@@ -1,4 +1,3 @@
-
 import 'package:advanced_flutter_project/core/theming/colors.dart';
 import 'package:advanced_flutter_project/core/theming/font_weight_helper.dart';
 import 'package:flutter/material.dart';

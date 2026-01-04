@@ -1,23 +1,18 @@
-import 'package:advanced_flutter_project/core/theming/colors.dart';
 import 'package:advanced_flutter_project/core/theming/styles.dart';
 import 'package:advanced_flutter_project/core/widgets/app_text_button.dart';
-import 'package:advanced_flutter_project/core/widgets/app_text_form_field.dart';
+import 'package:advanced_flutter_project/features/login/data/models/login_request_body.dart';
+import 'package:advanced_flutter_project/features/login/logic/cubit/login_cubit.dart';
 import 'package:advanced_flutter_project/features/login/ui/widgets/already_have_account_text.dart';
+import 'package:advanced_flutter_project/features/login/ui/widgets/email_and_password.dart';
+import 'package:advanced_flutter_project/features/login/ui/widgets/login_bloc_listener.dart';
 import 'package:advanced_flutter_project/features/login/ui/widgets/terms_and_conditions_text.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
-  @override
-  State<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormFieldState>();
-  bool isObsureText = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,51 +30,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyles.font14GrayRegular,
                 ),
                 SizedBox(height: 36.h),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      AppTextFormField(hintText: "Email"),
-                      SizedBox(height: 18.h),
-                      AppTextFormField(
-                        hintText: "Password",
-                        isObsureText: isObsureText,
-                        suffixIcon: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              isObsureText = !isObsureText;
-                            });
-                          },
-                          child: Icon(
-                            isObsureText
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                          ),
-                        ),
+                Column(
+                  children: [
+                    const EmailAndPassword(),
+                    SizedBox(height: 24.h),
+                    Align(
+                      alignment: AlignmentDirectional
+                          .centerEnd, // AlignmentDirectional >> for arabic
+                      child: Text(
+                        "Forgot Password?",
+                        textAlign: TextAlign.end,
+                        style: TextStyles.font13BlueRegular,
                       ),
-                      SizedBox(height: 24.h),
-                      Align(
-                        alignment: AlignmentDirectional
-                            .centerEnd, // AlignmentDirectional >> for arabic
-                        child: Text(
-                          "Forgot Password?",
-                          textAlign: TextAlign.end,
-                          style: TextStyles.font13BlueRegular,
-                        ),
-                      ),
-                      SizedBox(height: 40.h),
+                    ),
+                    SizedBox(height: 40.h),
 
-                      AppTextButton(
-                        buttonText: "Login",
-                        textStyle: TextStyles.font16WhiteSemiBold,
-                        onPressed: () {},
-                      ),
-                      SizedBox(height: 16.h),
-                      const TermsAndConditionsText(),
-                      SizedBox(height: 60.h),
-                      const AlreadyHaveAccountText(),
-                    ],
-                  ),
+                    AppTextButton(
+                      buttonText: "Login",
+                      textStyle: TextStyles.font16WhiteSemiBold,
+                      onPressed: () {
+                        validateThenDoLogin(context);
+                      },
+                    ),
+                    SizedBox(height: 16.h),
+                    const TermsAndConditionsText(),
+                    SizedBox(height: 60.h),
+                    const AlreadyHaveAccountText(),
+                    const LoginBlocListener(),
+                  ],
                 ),
               ],
             ),
@@ -87,5 +65,16 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  void validateThenDoLogin(BuildContext context) {
+    if (context.read<LoginCubit>().formKey.currentState!.validate()) {
+      context.read<LoginCubit>().emitLoginState(
+        LoginRequestBody(
+          email: context.read<LoginCubit>().emailController.text,
+          password: context.read<LoginCubit>().passwordController.text,
+        ),
+      );
+    }
   }
 }
